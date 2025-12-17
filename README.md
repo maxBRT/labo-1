@@ -1,5 +1,5 @@
 # Todo
 
-- [ ] Scaffold database_manager methods
-- [ ] Scaffold pages (Clients, Equipments, Locations) 
-- [ ] Scaffold MainWindow and navigation
+- [x] Scaffold database_manager methods
+- [x] Scaffold pages (Clients, Equipments, Locations) 
+- [x] Scaffold MainWindow and navigation
