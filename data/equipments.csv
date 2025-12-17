@@ -1,0 +1,11 @@
+name,cost_per_day,is_available
+Equipment 1,10.00,True
+Equipment 2,20.00,True
+Equipment 3,30.00,False
+Equipment 4,40.00,True
+Equipment 5,50.00,True
+Equipment 6,60.00,True
+Equipment 7,70.00,False
+Equipment 8,80.00,True
+Equipment 9,90.00,True
+Equipment 10,100.00,True
