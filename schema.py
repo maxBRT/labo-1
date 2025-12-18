@@ -12,8 +12,8 @@ class BaseSchema(BaseModel):
 
 class ClientBase(BaseSchema):
     name: str
-    email: Optional[str] = None
-    phone: Optional[str] = None
+    email: str
+    phone: str
 
 
 class ClientCreate(ClientBase):
