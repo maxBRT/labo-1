@@ -1,6 +1,6 @@
-from database_manager import DatabaseManager
-from database import Base, engine
-from models import *
+from location.database.database_manager import DatabaseManager
+from location.database.database import Base, engine
+from location.database.models import *
 
 
 def main():

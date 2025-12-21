@@ -2,9 +2,9 @@ from datetime import datetime
 from decimal import Decimal
 import csv
 from sqlalchemy.orm import joinedload
-from database import SessionLocal
-from models import Client, Equipment, Location
-from schema import (
+from .database import SessionLocal
+from .models import Client, Equipment, Location
+from .schema import (
     ClientCreate,
     ClientRead,
     EquipmentCreate,
@@ -74,6 +74,12 @@ class DatabaseManager:
                 raise Exception("Location not found")
 
             location.is_returned = True
+            equipment = session.query(Equipment).get(location.id_equipment)
+
+            if equipment is None:
+                raise Exception("Equipment not found")
+
+            equipment.is_available = True
             session.commit()
 
     def get_available_equipments(self):

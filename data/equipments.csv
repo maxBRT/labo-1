@@ -1,11 +1,26 @@
 name,cost_per_day,is_available
-Equipment 1,10.00,True
-Equipment 2,20.00,True
-Equipment 3,30.00,False
-Equipment 4,40.00,True
-Equipment 5,50.00,True
-Equipment 6,60.00,True
-Equipment 7,70.00,False
-Equipment 8,80.00,True
-Equipment 9,90.00,True
-Equipment 10,100.00,True
+Perceuse électrique,15.50,True
+Marteau-piqueur,45.00,True
+Scie circulaire,28.00,True
+Échafaudage 2m,35.00,False
+Bétonnière 150L,52.00,True
+Compresseur d'air,38.00,True
+Ponceuse orbitale,18.50,True
+Tronçonneuse thermique,42.00,False
+Échelle télescopique,22.00,True
+Niveau laser rotatif,25.00,True
+Meuleuse d'angle,16.00,True
+Perforateur burineur,32.00,True
+Scie sauteuse,14.00,True
+Pistolet à peinture,26.00,False
+Décapeuse thermique,12.50,True
+Ponceuse à bande,20.00,True
+Cloueuse pneumatique,30.00,True
+Rainureuse électrique,48.00,True
+Visseuse sans fil,13.00,True
+Raboteuse électrique,24.00,False
+Scie à onglet,34.00,True
+Nettoyeur haute pression,28.50,True
+Groupe électrogène,55.00,True
+Carotteuse à eau,68.00,True
+Élévateur à matériaux,75.00,False

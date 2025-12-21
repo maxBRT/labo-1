@@ -8,11 +8,13 @@ from PySide6.QtWidgets import (
     QTableWidgetItem,
     QHBoxLayout,
     QMessageBox,
+    QLineEdit,
 )
 from PySide6.QtGui import QShowEvent
-from schema import LocationRead, LocationCreate
-from database_manager import DatabaseManager
-from .add_location_form import AddLocationForm
+from PySide6.QtCore import Qt
+from location.database.schema import LocationRead, LocationCreate
+from location.database.database_manager import DatabaseManager
+from location.ui.add_location_form import AddLocationForm
 
 
 class LocationPage(QWidget):
@@ -26,15 +28,21 @@ class LocationPage(QWidget):
         self.button_container.setLayout(self.button_layout)
 
         self.add_button = QPushButton("Nouvelle location")
-        self.delete_button = QPushButton("Supprimer")
         self.return_button = QPushButton("Marquer comme retourné")
 
         self.button_layout.addWidget(self.add_button)
-        self.button_layout.addWidget(self.delete_button)
         self.button_layout.addWidget(self.return_button)
+
+        # Set up the search bar
+        self.search_layout = QHBoxLayout()
+        self.search_bar = QLineEdit()
+        self.search_bar.setPlaceholderText("Rechercher un client")
+        self.search_bar.textChanged.connect(self.search_client)
+        self.search_layout.addWidget(self.search_bar)
 
         # Set up the table
         self.table = QTableWidget()
+        self.table.setSortingEnabled(True)
         self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.setColumnCount(7)
@@ -47,16 +55,32 @@ class LocationPage(QWidget):
 
         # Set up the layouts
         layout.addWidget(self.button_container)
+        layout.addLayout(self.search_layout)
         layout.addWidget(self.table)
         self.setLayout(layout)
 
         # Connect the buttons
         self.add_button.clicked.connect(self.show_add_location)
-        self.delete_button.clicked.connect(self.delete_location)
         self.return_button.clicked.connect(self.return_location)
 
         # Create the database manager
         self.db_manager = DatabaseManager()
+
+    def search_client(self, text: str):
+        """
+        Search for a client in the table
+        """
+        search_text = text.lower()
+
+        for row in range(self.table.rowCount()):
+            match_found = False
+
+            item = self.table.item(row, 1)
+
+            if item and search_text in item.text().lower():
+                match_found = True
+
+            self.table.setRowHidden(row, not match_found)
 
     def show_add_location(self):
         add_form = AddLocationForm()
@@ -81,28 +105,6 @@ class LocationPage(QWidget):
                 self,
                 "Erreur lors de la création",
                 f"La location n'a pas pu être créée: {e}",
-            )
-
-    def delete_location(self):
-        try:
-            selected_row = self.table.currentRow()
-            if selected_row == -1:
-                return
-
-            # Get the location to delete
-            location_id = self.table.item(selected_row, 0).text()
-
-            # Delete the location
-            self.db_manager.delete_location(location_id)
-
-            # Refresh the table
-            self.showEvent(QShowEvent())
-
-        except Exception as e:
-            QMessageBox.critical(
-                self,
-                "Erreur lors de la suppresion",
-                f"La location n'a pas pu être supprimée: {e}",
             )
 
     def return_location(self):
@@ -146,26 +148,47 @@ class LocationPage(QWidget):
         super().showEvent(event)
 
     def add_item(self, data: LocationRead):
-        # Add a new row to the table
         row_index = self.table.rowCount()
         self.table.insertRow(row_index)
 
-        # Calculate the total cost of the location
         duration = data.end_date - data.start_date
         total_cost = data.equipment.cost_per_day * duration.days
 
-        # Model the data to display in the table
-        columns = [
-            str(data.id),
-            data.client.name,
-            data.equipment.name,
-            data.start_date.strftime("%Y-%m-%d"),
-            data.end_date.strftime("%Y-%m-%d"),
-            "Oui" if data.is_returned else "Non",
-            f"{total_cost:.2f} $",
-        ]
+        # Column 0
+        id_item = SortableItem(str(data.id))
+        id_item.setData(Qt.ItemDataRole.UserRole, data.id)
+        self.table.setItem(row_index, 0, id_item)
 
-        # Add the data to the table
-        for col_index, value in enumerate(columns):
-            item = QTableWidgetItem(value)
-            self.table.setItem(row_index, col_index, item)
+        # Column 1
+        self.table.setItem(row_index, 1, QTableWidgetItem(data.client.name))
+
+        # Column 2
+        self.table.setItem(row_index, 2, QTableWidgetItem(data.equipment.name))
+
+        # Column 3 & 4
+        self.table.setItem(
+            row_index, 3, QTableWidgetItem(data.start_date.strftime("%Y-%m-%d"))
+        )
+        self.table.setItem(
+            row_index, 4, QTableWidgetItem(data.end_date.strftime("%Y-%m-%d"))
+        )
+
+        # Column 5
+        self.table.setItem(
+            row_index, 5, QTableWidgetItem("Oui" if data.is_returned else "Non")
+        )
+
+        # Column 6
+        cost_item = SortableItem(f"{total_cost:.2f} $")
+        cost_item.setData(Qt.ItemDataRole.UserRole, total_cost)
+        self.table.setItem(row_index, 6, cost_item)
+
+
+class SortableItem(QTableWidgetItem):
+    def __lt__(self, other):
+        role = Qt.ItemDataRole.UserRole
+
+        value1 = self.data(role)
+        value2 = other.data(role)
+
+        return (value1 or 0) < (value2 or 0)

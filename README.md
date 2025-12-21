@@ -1,5 +1,7 @@
 # Todo
 
-- [x] Scaffold database_manager methods
-- [x] Scaffold pages (Clients, Equipments, Locations) 
-- [x] Scaffold MainWindow and navigation
+- [x] Add a button to sort the table by column
+- [x] Add the option to search for a client or equipment
+- [ ] Create table in client page
+- [ ] Create table in equipment page
+

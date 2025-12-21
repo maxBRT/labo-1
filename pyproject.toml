@@ -11,11 +11,10 @@ dependencies = [
 ]
 
 [project.scripts]
-main = "main:main"
-seed = "script.seed_db:main"
+main = "location.main:main"
+seed = "location.script.seed_db:main"
 
-[tool.setuptools]
-py-modules = ["main", "database", "database_manager", "models", "schema"]
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.setuptools.packages.find]
-include = ["ui*", "script*"]

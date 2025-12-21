@@ -9,11 +9,11 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from database import Base, engine
-from ui.client_page import ClientPage
-from ui.equipment_page import EquipmentPage
-from ui.location_page import LocationPage
-from models import *
+from location.database.database import Base, engine
+from location.ui.client_page import ClientPage
+from location.ui.equipment_page import EquipmentPage
+from location.ui.location_page import LocationPage
+from location.database.models import *
 
 
 class MainWindow(QMainWindow):

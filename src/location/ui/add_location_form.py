@@ -7,10 +7,8 @@ from PySide6.QtWidgets import (
     QComboBox,
     QDateEdit,
 )
-from PySide6.QtGui import QShowEvent
 from PySide6.QtCore import QDate
-from schema import ClientRead, EquipmentRead
-from database_manager import DatabaseManager
+from location.database.database_manager import DatabaseManager
 
 
 class AddLocationForm(QDialog):
