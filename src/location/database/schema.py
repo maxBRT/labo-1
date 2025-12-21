@@ -3,9 +3,8 @@ from datetime import datetime
 from typing import Optional
 from decimal import Decimal
 
+
 # Pydantic models for linking the database with the ui
-
-
 class BaseSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

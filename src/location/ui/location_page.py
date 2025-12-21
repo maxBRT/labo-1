@@ -15,6 +15,7 @@ from PySide6.QtCore import Qt
 from location.database.schema import LocationRead, LocationCreate
 from location.database.database_manager import DatabaseManager
 from location.ui.add_location_form import AddLocationForm
+from location.ui.widgets import SortableItem
 
 
 class LocationPage(QWidget):
@@ -36,7 +37,7 @@ class LocationPage(QWidget):
         # Set up the search bar
         self.search_layout = QHBoxLayout()
         self.search_bar = QLineEdit()
-        self.search_bar.setPlaceholderText("Rechercher un client")
+        self.search_bar.setPlaceholderText("Rechercher un client ou un équipement")
         self.search_bar.textChanged.connect(self.search_client)
         self.search_layout.addWidget(self.search_bar)
 
@@ -45,10 +46,10 @@ class LocationPage(QWidget):
         self.table.setSortingEnabled(True)
         self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        self.table.setColumnCount(7)
+        self.table.setColumnCount(6)
         self.table.verticalHeader().setVisible(False)
         self.table.setHorizontalHeaderLabels(
-            ["Index", "Client", "Équipment", "Début", "Fin", "Retourné", "Coût"]
+            ["Index", "Client", "Équipment", "Début", "Fin", "Retourné"]
         )
         header = self.table.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
@@ -72,23 +73,33 @@ class LocationPage(QWidget):
         """
         search_text = text.lower()
 
+        # Hide all rows that don't match the search text
         for row in range(self.table.rowCount()):
             match_found = False
 
-            item = self.table.item(row, 1)
+            client = self.table.item(row, 1)
+            equipment = self.table.item(row, 2)
 
-            if item and search_text in item.text().lower():
+            if client and search_text in client.text().lower():
+                match_found = True
+            if equipment and search_text in equipment.text().lower():
                 match_found = True
 
             self.table.setRowHidden(row, not match_found)
 
     def show_add_location(self):
+        """
+        Show the add location form
+        """
         add_form = AddLocationForm()
         if add_form.exec():
             data = add_form.get_data()
             self.create_location(data)
 
     def create_location(self, data: dict):
+        """
+        Create a location in the database and refresh the table
+        """
         try:
             # Create the location
             location = LocationCreate(
@@ -98,6 +109,7 @@ class LocationPage(QWidget):
                 id_client=data["client"].id,
                 id_equipment=data["equipment"].id,
             )
+
             self.db_manager.create_location(location)
             self.showEvent(QShowEvent())
         except Exception as e:
@@ -108,6 +120,9 @@ class LocationPage(QWidget):
             )
 
     def return_location(self):
+        """
+        Return the selected location
+        """
         try:
             selected_row = self.table.currentRow()
             if selected_row == -1:
@@ -134,6 +149,9 @@ class LocationPage(QWidget):
         When the page is shown, get the locations from the database and add them to the table
         """
 
+        # Disable sorting while populating to avoid race conditions
+        self.table.setSortingEnabled(False)
+
         # Clear the table
         self.table.clearContents()
         self.table.setRowCount(0)
@@ -145,14 +163,17 @@ class LocationPage(QWidget):
         for loc in locations:
             self.add_item(loc)
 
+        # Re-enable sorting after all items are added
+        self.table.setSortingEnabled(True)
+
         super().showEvent(event)
 
     def add_item(self, data: LocationRead):
+        """
+        Add a location to the table
+        """
         row_index = self.table.rowCount()
         self.table.insertRow(row_index)
-
-        duration = data.end_date - data.start_date
-        total_cost = data.equipment.cost_per_day * duration.days
 
         # Column 0
         id_item = SortableItem(str(data.id))
@@ -177,18 +198,3 @@ class LocationPage(QWidget):
         self.table.setItem(
             row_index, 5, QTableWidgetItem("Oui" if data.is_returned else "Non")
         )
-
-        # Column 6
-        cost_item = SortableItem(f"{total_cost:.2f} $")
-        cost_item.setData(Qt.ItemDataRole.UserRole, total_cost)
-        self.table.setItem(row_index, 6, cost_item)
-
-
-class SortableItem(QTableWidgetItem):
-    def __lt__(self, other):
-        role = Qt.ItemDataRole.UserRole
-
-        value1 = self.data(role)
-        value2 = other.data(role)
-
-        return (value1 or 0) < (value2 or 0)

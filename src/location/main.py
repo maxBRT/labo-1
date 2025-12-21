@@ -8,6 +8,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+import os
 
 from location.database.database import Base, engine
 from location.ui.client_page import ClientPage
@@ -41,6 +42,7 @@ class MainWindow(QMainWindow):
 
         # Add the sidebar to the main layout
         self.sidebar_container = QWidget()
+        self.sidebar_container.setObjectName("sidebar")
         self.sidebar_container.setLayout(self.sidebar_layout)
         self.main_layout.addWidget(self.sidebar_container)
 
@@ -73,6 +75,13 @@ def main():
     Base.metadata.create_all(bind=engine)
 
     app = QApplication([])
+
+    # Load and apply stylesheet
+    stylesheet_path = os.path.join(os.path.dirname(__file__), "styles.qss")
+    if os.path.exists(stylesheet_path):
+        with open(stylesheet_path, "r") as f:
+            app.setStyleSheet(f.read())
+
     window = MainWindow()
     window.show()
     app.exec()

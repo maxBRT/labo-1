@@ -40,7 +40,7 @@ class AddLocationForm(QDialog):
         self.equipment_input = QComboBox()
         for equipment in self.equipments:
             # Create a display text for the equipment
-            display_text = f"{equipment.name} ({equipment.cost_per_day} $)"
+            display_text = f"{equipment.name} ({equipment.cost_per_day} $/jour)"
 
             # Add the equipment data to the combo box
             self.equipment_input.addItem(display_text, equipment)
@@ -68,6 +68,19 @@ class AddLocationForm(QDialog):
         layout.addWidget(self.end_date_label)
         layout.addWidget(self.end_date_input)
 
+        # Add total cost display
+        self.total_cost_label = QLabel("Coût total estimé: 0.00 $")
+        self.total_cost_label.setStyleSheet("font-weight: bold; font-size: 14px;")
+        layout.addWidget(self.total_cost_label)
+
+        # Connect signals to update cost calculation
+        self.equipment_input.currentIndexChanged.connect(self.update_total_cost)
+        self.start_date_input.dateChanged.connect(self.update_total_cost)
+        self.end_date_input.dateChanged.connect(self.update_total_cost)
+
+        # Initial cost calculation
+        self.update_total_cost()
+
         # Add Standard Buttons (Ok / Cancel)
         self.buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
@@ -88,3 +101,31 @@ class AddLocationForm(QDialog):
             "start_date": self.start_date_input.date().toPython(),
             "end_date": self.end_date_input.date().toPython(),
         }
+
+    def update_total_cost(self):
+        """Calculate and display the estimated total cost"""
+        # Get the selected equipment
+        equipment = self.equipment_input.currentData()
+
+        if equipment is None:
+            self.total_cost_label.setText("Coût total estimé: 0.00 $")
+            return
+
+        # Get the dates
+        start_date = self.start_date_input.date().toPython()
+        end_date = self.end_date_input.date().toPython()
+
+        # Calculate number of days
+        duration = (end_date - start_date).days
+
+        # Make sure duration is at least 1 day
+        if duration < 1:
+            duration = 1
+
+        # Calculate total cost
+        total_cost = equipment.cost_per_day * duration
+
+        # Update the label
+        self.total_cost_label.setText(
+            f"Coût total estimé: {total_cost:.2f} $ ({duration} jour{'s' if duration > 1 else ''})"
+        )

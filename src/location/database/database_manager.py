@@ -21,10 +21,34 @@ class DatabaseManager:
             session.add(client)
             session.commit()
 
+    def update_client(self, client_id: int, data: ClientCreate):
+        with SessionLocal() as session:
+            client = session.query(Client).get(client_id)
+
+            if client is None:
+                raise Exception("Client not found")
+
+            client.name = data.name
+            client.email = data.email
+            client.phone = data.phone
+            session.commit()
+
     def create_equipment(self, data: EquipmentCreate):
         with SessionLocal() as session:
             equipment = Equipment(**data.model_dump())
             session.add(equipment)
+            session.commit()
+
+    def update_equipment(self, equipment_id: int, data: EquipmentCreate):
+        with SessionLocal() as session:
+            equipment = session.query(Equipment).get(equipment_id)
+
+            if equipment is None:
+                raise Exception("Equipment not found")
+
+            equipment.name = data.name
+            equipment.cost_per_day = data.cost_per_day
+            equipment.is_available = data.is_available
             session.commit()
 
     def create_location(self, data: LocationCreate):
@@ -60,12 +84,6 @@ class DatabaseManager:
 
             return [LocationRead.model_validate(loc) for loc in locations]
 
-    def delete_location(self, id):
-        with SessionLocal() as session:
-            location = session.query(Location).get(id)
-            session.delete(location)
-            session.commit()
-
     def return_location(self, id):
         with SessionLocal() as session:
             location = session.query(Location).get(id)
@@ -89,25 +107,18 @@ class DatabaseManager:
             return [EquipmentRead.model_validate(e) for e in equipments]
 
     def get_client_by_id(self, id):
-        pass
+        with SessionLocal() as session:
+            client = session.query(Client).get(id)
+            if client is None:
+                return None
+            return ClientRead.model_validate(client)
 
     def get_equipment_by_id(self, id):
-        pass
-
-    def get_location_by_id(self, id):
-        pass
-
-    def get_client_by_phone(self, phone):
-        pass
-
-    def get_equipment_by_name(self, name):
-        pass
-
-    def get_location_by_client_id(self, id_client):
-        pass
-
-    def get_location_by_equipment_name(self, id_equipment):
-        pass
+        with SessionLocal() as session:
+            equipment = session.query(Equipment).get(id)
+            if equipment is None:
+                return None
+            return EquipmentRead.model_validate(equipment)
 
     def seed(self):
         """
